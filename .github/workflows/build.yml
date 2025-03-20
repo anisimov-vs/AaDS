@@ -1,0 +1,53 @@
+name: Build and Test Assignments
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  find-assignments:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Find all assignments
+      id: set-matrix
+      run: |
+        ASSIGNMENTS=$(find . -maxdepth 1 -type d -name "assignment*" | sort | jq -R -s -c 'split("\n")[:-1]')
+        echo "matrix={\"assignment\":$ASSIGNMENTS}" >> $GITHUB_OUTPUT
+        echo "Found assignments: $ASSIGNMENTS"
+
+  build-and-test:
+    needs: find-assignments
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.find-assignments.outputs.matrix)}}
+      fail-fast: false
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake g++ python3
+    
+    - name: Build and Test ${{ matrix.assignment }}
+      run: |
+        cd "${{ matrix.assignment }}"
+        
+        # Build with CMake
+        mkdir -p build
+        cd build
+        cmake ..
+        make -j$(nproc)
+        
+        # Go back to assignment directory and run test script
+        cd ..
+        chmod +x test_script.sh
+        ./test_script.sh 
