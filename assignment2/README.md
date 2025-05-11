@@ -1,4 +1,4 @@
-# AaDS Practical Work 1 - Gaussian Elimination Solver
+# AaDS Practical Work 2 - Gaussian Elimination Solver
 
 A C++ program to solve systems of linear equations using Gaussian elimination with partial pivoting. It can read systems from CSV files or generate random ones.
 
