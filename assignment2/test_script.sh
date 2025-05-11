@@ -42,14 +42,14 @@ if [ -f "solution.csv" ] && [ -f "data/expected_solution1.csv" ]; then
     echo -e "\nCalculated solution:"
     cat solution.csv
     
-    echo -e "\nDifference (using diff):"
+    echo -e "\nDifference:"
     if diff -q solution.csv data/expected_solution1.csv >/dev/null; then
         echo "PASSED: Solution matches expected values!"
     else
         echo "FAILED: Solution differs from expected values!"
         echo "Showing differences:"
         diff solution.csv data/expected_solution1.csv
-        exit 1 # Exit if comparison fails
+        exit 1
     fi
 else
     echo "Solution file (solution.csv) or expected solution file (data/expected_solution1.csv) not found."
