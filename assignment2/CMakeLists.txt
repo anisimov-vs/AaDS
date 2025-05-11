@@ -46,6 +46,11 @@ FetchContent_Declare(
     GIT_TAG v1.17.0
 )
 
+# Explicitly set C++ standard for GTest before MakeAvailable
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard for GTest")
+set(CMAKE_CXX_STANDARD_REQUIRED ON CACHE BOOL "Require GTest C++ standard")
+set(CMAKE_CXX_EXTENSIONS OFF CACHE BOOL "Disable GTest C++ extensions")
+
 FetchContent_MakeAvailable(googletest)
 
 add_executable(gauss_test 
