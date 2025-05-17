@@ -60,34 +60,6 @@ bool ShannonFano::BitReader::readBit(bool& bit_val) {
     return true;
 }
 
-/*void ShannonFano::encode(std::istream& inputFile, std::ostream& outputFile, std::ostream& dictFile) {
-    clearState();
-
-    if (!inputFile.good()) throw std::runtime_error("Input file stream is not good before encoding.");
-    if (!outputFile.good()) throw std::runtime_error("Output file stream is not good before encoding.");
-    if (!dictFile.good()) throw std::runtime_error("Dictionary file stream is not good before encoding.");
-
-    std::streampos initialPos = inputFile.tellg();
-    buildFrequencyMap(inputFile);
-
-    if (frequencyMap.empty()) {
-        writeDictionary(dictFile);
-        return;
-    }
-    
-    buildCodesInternal();
-    writeDictionary(dictFile);
-
-    inputFile.clear(); 
-    inputFile.seekg(initialPos); 
-    if (!inputFile.good()) {
-         throw std::runtime_error("Input file stream could not be reset for encoding pass. Consider buffering for non-seekable streams.");
-    }
-    writeCompressedData(inputFile, outputFile);
-}*/
-
-// shannon_fano.cpp
-// ... inside ShannonFano::encode method ...
 void ShannonFano::encode(std::istream& inputFile, std::ostream& outputFile, std::ostream& dictFile) {
     clearState();
 
@@ -97,26 +69,22 @@ void ShannonFano::encode(std::istream& inputFile, std::ostream& outputFile, std:
     std::istream* pStreamToProcess = &inputFile;
     std::stringstream bufferedInput;
     
-    inputFile.clear(); // Clear any error flags
+    inputFile.clear();
     std::streampos initialPosCheck = inputFile.tellg();
-    inputFile.seekg(0, std::ios_base::end); // Try to seek to end
+    inputFile.seekg(0, std::ios_base::end);
     bool isSeekable = inputFile.good();
-    inputFile.clear(); // Clear flags from seek attempt
-    inputFile.seekg(initialPosCheck); // Go back to original position if possible
+    inputFile.clear();
+    inputFile.seekg(initialPosCheck);
 
 
-    if (!isSeekable || (&inputFile == &std::cin) ) { // Added explicit check for std::cin for robustness
-        // Buffer std::cin or other non-seekable streams
-        bufferedInput << inputFile.rdbuf(); // Read entire stream into stringstream
-        if (inputFile.bad()) { // Check if reading from original inputFile failed
+    if (!isSeekable || (&inputFile == &std::cin) ) {
+        bufferedInput << inputFile.rdbuf();
+        if (inputFile.bad()) {
              throw std::runtime_error("Failed to read from input stream into buffer.");
         }
-        pStreamToProcess = &bufferedInput; // Process the buffered data
-        // Note: original inputFile is now exhausted if it was a pipe
+        pStreamToProcess = &bufferedInput;
     }
 
-    // --- Pass 1: Build Frequency Map ---
-    // Ensure the stream to process is at the beginning for the first pass
     pStreamToProcess->clear();
     pStreamToProcess->seekg(0, std::ios_base::beg);
     if (!pStreamToProcess->good()) {
@@ -132,8 +100,6 @@ void ShannonFano::encode(std::istream& inputFile, std::ostream& outputFile, std:
     buildCodesInternal();
     writeDictionary(dictFile);
 
-    // --- Pass 2: Write Compressed Data ---
-    // Ensure the stream to process is at the beginning for the second pass
     pStreamToProcess->clear();
     pStreamToProcess->seekg(0, std::ios_base::beg);
      if (!pStreamToProcess->good()) {
